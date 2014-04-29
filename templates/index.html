@@ -1,0 +1,94 @@
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<h1>Hello {{ variable }} , welcome to my awesome site</h1>
+<button>Click me</button>
+
+<script type="text/javascript">
+ 	$.ajax({
+    url: 'http://127.0.0.1:8000/hello',
+    type: 'get', //this is the default though, you don't actually need to always mention it
+    success: function(data) {
+    	console.log('success')
+        $("p").html(data);
+    },
+    failure: function(data) { 
+        alert('Got an error dude');
+    }
+}); 	
+</script>
+<p></p>
+
+<form method='POST' id ='test'>
+	{% csrf_token %}
+     <input type="hidden" value="video34" />
+    <input type='submit' value='Test button'/>
+
+    <div id = 'message'>Initial text</div>
+
+</form>
+<script type="text/javascript">
+	$(document).ready(function() {
+       $("#test").submit(function(event){
+            $.ajax({
+            	
+                 type:"POST",
+                 url:"/edit/",
+                 data: {
+                        'video': $('#test').val(),
+                        },
+
+                 success: function(){
+                     $('#message').html("<h2>COngrats</h2>") 
+                 }
+            });
+            return false; //<---- move it here
+       });
+
+});
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i=0; i<cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length+1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    //these HTTP methods do not require CSRF protection
+    return(/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+function sameOrigin(url) {
+    // test that a given url is a same-origin URL
+    // url could be relative or scheme relative or absolute
+    var host = document.location.host; // host + port
+    var protocol = document.location.protocol;
+    var sr_origin = '//' + host;
+    var origin = protocol + sr_origin;
+    //Allow absolute or scheme relative URLs to the same origin
+    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') || (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+    // or any other URL that isn't scheme relative or absolute i.e relative
+    !(/^(\/\/|http:|https:).*/.test(url));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+            //send the token to same-origin, relative URLs only.
+            //send the token only if the method warrants CSRF protection
+            //using the CSRFToken value acquired earlier
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }}
+});
+</script>
+
+
